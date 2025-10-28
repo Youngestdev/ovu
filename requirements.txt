@@ -20,7 +20,7 @@ paystack==1.6.1
 
 # QR Code Generation
 qrcode==7.4.2
-Pillow==10.1.0
+Pillow==10.3.0
 
 # Notifications
 httpx==0.25.2
