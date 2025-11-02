@@ -12,6 +12,7 @@ from app.core.security import (
     create_refresh_token,
 )
 from app.middleware.auth import get_current_user
+from app.services.notification_service import NotificationService
 
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -39,6 +40,13 @@ async def register(user_data: UserRegister):
     )
     
     await user.save()
+    
+    # Send welcome email
+    notification_service = NotificationService()
+    await notification_service.email_service.send_welcome_email(
+        to_email=user.email,
+        first_name=user.first_name,
+    )
     
     return UserResponse(
         id=str(user.id),

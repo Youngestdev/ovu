@@ -5,15 +5,15 @@ import httpx
 from typing import Optional, List
 from twilio.rest import Client
 from app.core.config import settings
-import aiosmtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+from app.services.email_service import EmailService
+from datetime import datetime
 
 
 class NotificationService:
     """Unified notification service"""
     
     def __init__(self):
+        self.email_service = EmailService()
         self.twilio_client = None
         if settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN:
             self.twilio_client = Client(
@@ -28,33 +28,17 @@ class NotificationService:
         body: str,
         html_body: Optional[str] = None,
     ) -> bool:
-        """Send email notification"""
+        """Send email notification using Resend"""
         
         try:
-            message = MIMEMultipart("alternative")
-            message["Subject"] = subject
-            message["From"] = f"{settings.SMTP_FROM_NAME} <{settings.SMTP_FROM_EMAIL}>"
-            message["To"] = to_email
+            # Use HTML body if provided, otherwise use plain text
+            html_content = html_body if html_body else f"<pre>{body}</pre>"
             
-            # Add text and HTML parts
-            part1 = MIMEText(body, "plain")
-            message.attach(part1)
-            
-            if html_body:
-                part2 = MIMEText(html_body, "html")
-                message.attach(part2)
-            
-            # Send email
-            await aiosmtplib.send(
-                message,
-                hostname=settings.SMTP_HOST,
-                port=settings.SMTP_PORT,
-                username=settings.SMTP_USER,
-                password=settings.SMTP_PASSWORD,
-                start_tls=True,
+            return await self.email_service.send_email(
+                to_email=to_email,
+                subject=subject,
+                html_content=html_content,
             )
-            
-            return True
         except Exception as e:
             print(f"Error sending email: {e}")
             return False
@@ -109,27 +93,18 @@ class NotificationService:
     ) -> None:
         """Send booking confirmation via multiple channels"""
         
-        subject = f"Booking Confirmation - {booking_reference}"
-        
-        body = f"""
-        Dear Customer,
-        
-        Your booking has been confirmed!
-        
-        Booking Reference: {booking_reference}
-        Transport Type: {booking_details.get('transport_type')}
-        Route: {booking_details.get('origin')} to {booking_details.get('destination')}
-        Departure: {booking_details.get('departure_date')}
-        Total Amount: NGN {booking_details.get('total_price')}
-        
-        Thank you for choosing Ovu Transport.
-        
-        Best regards,
-        Ovu Transport Team
-        """
-        
-        # Send email
-        await self.send_email(email, subject, body)
+        # Send email using new template-based service
+        await self.email_service.send_booking_confirmation(
+            to_email=email,
+            customer_name=booking_details.get('customer_name', 'Customer'),
+            booking_reference=booking_reference,
+            transport_type=booking_details.get('transport_type', ''),
+            origin=booking_details.get('origin', ''),
+            destination=booking_details.get('destination', ''),
+            departure_date=booking_details.get('departure_date', ''),
+            total_passengers=booking_details.get('total_passengers', 1),
+            total_price=booking_details.get('total_price', 0),
+        )
         
         # Send SMS if phone number is provided
         if phone:
@@ -142,39 +117,23 @@ class NotificationService:
         phone: Optional[str],
         ticket_number: str,
         ticket_url: str,
+        booking_details: Optional[dict] = None,
     ) -> None:
         """Send e-ticket notification"""
         
-        subject = f"Your E-Ticket - {ticket_number}"
+        if booking_details is None:
+            booking_details = {}
         
-        body = f"""
-        Dear Customer,
-        
-        Your e-ticket is ready!
-        
-        Ticket Number: {ticket_number}
-        
-        Download your ticket: {ticket_url}
-        
-        Please present this ticket at the departure terminal.
-        
-        Best regards,
-        Ovu Transport Team
-        """
-        
-        html_body = f"""
-        <html>
-        <body>
-            <h2>Your E-Ticket is Ready!</h2>
-            <p><strong>Ticket Number:</strong> {ticket_number}</p>
-            <p><a href="{ticket_url}">Download Your Ticket</a></p>
-            <p>Please present this ticket at the departure terminal.</p>
-            <p>Best regards,<br>Ovu Transport Team</p>
-        </body>
-        </html>
-        """
-        
-        await self.send_email(email, subject, body, html_body)
+        await self.email_service.send_ticket(
+            to_email=email,
+            customer_name=booking_details.get('customer_name', 'Customer'),
+            ticket_number=ticket_number,
+            booking_reference=booking_details.get('booking_reference', ''),
+            origin=booking_details.get('origin', ''),
+            destination=booking_details.get('destination', ''),
+            departure_date=booking_details.get('departure_date', ''),
+            ticket_url=ticket_url,
+        )
         
         if phone:
             sms_message = f"Your e-ticket {ticket_number} is ready! Check your email for download link."
@@ -186,22 +145,25 @@ class NotificationService:
         payment_reference: str,
         amount: float,
         status: str,
+        booking_reference: str = "",
+        customer_name: str = "Customer",
     ) -> None:
         """Send payment notification"""
         
-        subject = f"Payment {status.upper()} - {payment_reference}"
-        
-        body = f"""
-        Dear Customer,
-        
-        Payment Status: {status.upper()}
-        Payment Reference: {payment_reference}
-        Amount: NGN {amount}
-        
-        {'Thank you for your payment!' if status == 'success' else 'Please contact support if you need assistance.'}
-        
-        Best regards,
-        Ovu Transport Team
-        """
-        
-        await self.send_email(email, subject, body)
+        if status == "success":
+            await self.email_service.send_payment_success(
+                to_email=email,
+                customer_name=customer_name,
+                payment_reference=payment_reference,
+                booking_reference=booking_reference,
+                amount=amount,
+                payment_date=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+            )
+        else:
+            await self.email_service.send_payment_failed(
+                to_email=email,
+                customer_name=customer_name,
+                payment_reference=payment_reference,
+                booking_reference=booking_reference,
+                amount=amount,
+            )

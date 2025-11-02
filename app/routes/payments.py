@@ -148,6 +148,8 @@ async def payment_webhook(request: Request):
                     payment_reference=reference,
                     amount=payment.amount,
                     status="success",
+                    booking_reference=booking.booking_reference,
+                    customer_name=f"{user.first_name} {user.last_name}",
                 )
     
     return {"status": "success"}
