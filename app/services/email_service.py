@@ -21,9 +21,14 @@ class EmailService:
         resend.api_key = settings.RESEND_API_KEY
         self.from_email = settings.RESEND_FROM_EMAIL
         self.templates_dir = Path(__file__).parent.parent / "templates" / "emails"
+        self._template_cache: Dict[str, Template] = {}
     
     def _load_template(self, template_name: str) -> Template:
-        """Load and return email template"""
+        """Load and return email template with caching"""
+        # Check cache first
+        if template_name in self._template_cache:
+            return self._template_cache[template_name]
+        
         template_path = self.templates_dir / f"{template_name}.html"
         
         if not template_path.exists():
@@ -32,7 +37,12 @@ class EmailService:
         with open(template_path, 'r', encoding='utf-8') as f:
             template_content = f.read()
         
-        return Template(template_content)
+        template = Template(template_content)
+        
+        # Cache the template
+        self._template_cache[template_name] = template
+        
+        return template
     
     def _render_template(self, template_name: str, context: Dict[str, Any]) -> str:
         """Render email template with context"""
