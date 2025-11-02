@@ -2,11 +2,15 @@
 Email service using Resend
 """
 import resend
+import logging
 from typing import Optional, Dict, Any
 from datetime import datetime
 from pathlib import Path
 from jinja2 import Template
 from app.core.config import settings
+
+
+logger = logging.getLogger(__name__)
 
 
 class EmailService:
@@ -65,7 +69,7 @@ class EmailService:
             return response.get("id") is not None
             
         except Exception as e:
-            print(f"Error sending email via Resend: {e}")
+            logger.error(f"Error sending email via Resend: {e}")
             return False
     
     async def send_welcome_email(

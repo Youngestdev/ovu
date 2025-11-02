@@ -1,12 +1,16 @@
 """
 Notification service for email, SMS, and WhatsApp
 """
+import logging
 import httpx
 from typing import Optional, List
 from twilio.rest import Client
 from app.core.config import settings
 from app.services.email_service import EmailService
 from datetime import datetime
+
+
+logger = logging.getLogger(__name__)
 
 
 class NotificationService:
@@ -40,14 +44,14 @@ class NotificationService:
                 html_content=html_content,
             )
         except Exception as e:
-            print(f"Error sending email: {e}")
+            logger.error(f"Error sending email: {e}")
             return False
     
     async def send_sms(self, to_phone: str, message: str) -> bool:
         """Send SMS notification"""
         
         if not self.twilio_client:
-            print("Twilio client not configured")
+            logger.warning("Twilio client not configured")
             return False
         
         try:
@@ -59,14 +63,14 @@ class NotificationService:
             
             return message.sid is not None
         except Exception as e:
-            print(f"Error sending SMS: {e}")
+            logger.error(f"Error sending SMS: {e}")
             return False
     
     async def send_whatsapp(self, to_phone: str, message: str) -> bool:
         """Send WhatsApp notification"""
         
         if not self.twilio_client:
-            print("Twilio client not configured")
+            logger.warning("Twilio client not configured")
             return False
         
         try:
@@ -81,7 +85,7 @@ class NotificationService:
             
             return message.sid is not None
         except Exception as e:
-            print(f"Error sending WhatsApp message: {e}")
+            logger.error(f"Error sending WhatsApp message: {e}")
             return False
     
     async def send_booking_confirmation(
