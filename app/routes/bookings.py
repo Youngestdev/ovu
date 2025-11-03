@@ -133,10 +133,12 @@ async def create_booking(
         phone=current_user.phone,
         booking_reference=booking_reference,
         booking_details={
+            "customer_name": f"{current_user.first_name} {current_user.last_name}",
             "transport_type": booking.transport_type,
             "origin": booking.origin,
             "destination": booking.destination,
             "departure_date": booking.departure_date.strftime("%Y-%m-%d %H:%M"),
+            "total_passengers": booking.total_passengers,
             "total_price": booking.total_price,
         }
     )

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmation</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            margin: 20px auto;
+            padding: 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 30px;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
+            border-top: 1px solid #e9ecef;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 15px 0;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        .info-value {
+            color: #212529;
+        }
+        .reference {
+            background-color: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        h2 {
+            color: #212529;
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+        p {
+            color: #495057;
+            margin: 15px 0;
+        }
+        .success-icon {
+            text-align: center;
+            font-size: 48px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Ovu Transport</h1>
+        </div>
+        <div class="content">
+            <div class="success-icon">✅</div>
+            <h2 style="text-align: center;">Booking Confirmed!</h2>
+            
+            <p>Dear {{ customer_name }},</p>
+            <p>Your booking has been successfully confirmed. Here are your booking details:</p>
+
+            <div class="reference">{{ booking_reference }}</div>
+
+            <div class="info-box">
+                <div class="info-row">
+                    <span class="info-label">Transport Type:</span>
+                    <span class="info-value">{{ transport_type }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Route:</span>
+                    <span class="info-value">{{ origin }} → {{ destination }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Departure:</span>
+                    <span class="info-value">{{ departure_date }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Passengers:</span>
+                    <span class="info-value">{{ total_passengers }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Total Amount:</span>
+                    <span class="info-value">NGN {{ total_price }}</span>
+                </div>
+            </div>
+
+            <p style="text-align: center;">
+                <a href="{{ booking_url }}" class="button">View Booking Details</a>
+            </p>
+
+            <p><strong>Next Steps:</strong></p>
+            <p>1. Complete payment to receive your e-ticket<br>
+            2. Present your e-ticket at the departure terminal<br>
+            3. Arrive at least 30 minutes before departure</p>
+
+            <p>Thank you for choosing Ovu Transport!</p>
+
+            <p>Best regards,<br>The Ovu Transport Team</p>
+        </div>
+        <div class="footer">
+            <p>© {{ year }} Ovu Transport. All rights reserved.</p>
+            <p>Booking Reference: {{ booking_reference }}</p>
+        </div>
+    </div>
+</body>
+</html>
