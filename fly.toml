@@ -1,0 +1,97 @@
+# fly.toml app configuration file generated for ovu-transport on 2024-11-03
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "ovu-transport"
+primary_region = "lhr"  # London region (closest to Nigeria)
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  APP_NAME = "Ovu Transport Aggregator"
+  APP_ENV = "production"
+  DEBUG = "false"
+  API_VERSION = "v1"
+  HOST = "0.0.0.0"
+  PORT = "8000"
+  
+  # JWT
+  JWT_ALGORITHM = "HS256"
+  JWT_ACCESS_TOKEN_EXPIRE_MINUTES = "30"
+  JWT_REFRESH_TOKEN_EXPIRE_DAYS = "7"
+  
+  # Email
+  SMTP_HOST = "smtp.gmail.com"
+  SMTP_PORT = "587"
+  SMTP_FROM_NAME = "Ovu Transport"
+  
+  # Redis (use Upstash Redis or Fly Redis)
+  # REDIS_URL set via secrets
+  
+  # Security
+  ALLOWED_ORIGINS = "https://ovu.ng,https://www.ovu.ng"
+  RATE_LIMIT_PER_MINUTE = "60"
+  
+  # Compliance
+  PCI_DSS_MODE = "enabled"
+  NDPA_COMPLIANCE = "enabled"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 250
+    soft_limit = 200
+
+[[http_service.checks]]
+  grace_period = "10s"
+  interval = "30s"
+  method = "GET"
+  timeout = "5s"
+  path = "/health"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
+
+# Uncomment to use Fly Postgres (recommended for production)
+# [[services.ports]]
+#   handlers = ["pg_tls"]
+#   port = 5432
+
+# Secrets to set via `fly secrets set`:
+# - SECRET_KEY: Your application secret key
+# - MONGODB_URL: MongoDB connection string
+# - PAYSTACK_SECRET_KEY: Paystack secret key
+# - PAYSTACK_PUBLIC_KEY: Paystack public key
+# - PAYSTACK_WEBHOOK_SECRET: Paystack webhook secret
+# - RESEND_API_KEY: Resend API key
+# - DATA_ENCRYPTION_KEY: Data encryption key
+# - SMTP_FROM_EMAIL: SMTP from email (if using SMTP)
+# - SMTP_USER: SMTP username (optional)
+# - SMTP_PASSWORD: SMTP password (optional)
+# - TWILIO_ACCOUNT_SID: Twilio account SID (optional)
+# - TWILIO_AUTH_TOKEN: Twilio auth token (optional)
+# - TWILIO_PHONE_NUMBER: Twilio phone number (optional)
+# - TWILIO_WHATSAPP_NUMBER: Twilio WhatsApp number (optional)
+# - TRAVU_API_KEY: Travu API key (optional)
+# - TRAVU_API_SECRET: Travu API secret (optional)
+# - NRC_API_KEY: NRC API key (optional)
+# - NRC_API_SECRET: NRC API secret (optional)
+# - REDIS_URL: Redis connection URL
+
+# Example secret setting commands:
+# fly secrets set SECRET_KEY="your-secret-key-here"
+# fly secrets set MONGODB_URL="mongodb+srv://username:password@cluster.mongodb.net/ovu_transport"
+# fly secrets set PAYSTACK_SECRET_KEY="sk_live_xxx"
+# fly secrets set RESEND_API_KEY="re_xxx"
+# fly secrets set DATA_ENCRYPTION_KEY="your-encryption-key"
