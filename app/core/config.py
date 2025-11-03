@@ -78,6 +78,16 @@ class Settings(BaseSettings):
     @property
     def origins(self) -> List[str]:
         return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",")]
+    
+    @property
+    def is_production(self) -> bool:
+        """Check if running in production environment"""
+        return self.APP_ENV.lower() in ["production", "prod"]
+    
+    @property
+    def is_development(self) -> bool:
+        """Check if running in development environment"""
+        return self.APP_ENV.lower() in ["development", "dev"]
 
 
 settings = Settings()
