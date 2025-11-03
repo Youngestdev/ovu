@@ -4,9 +4,12 @@ Paystack payment service with split settlement support
 import httpx
 import hmac
 import hashlib
+import logging
 from typing import Optional, List, Dict, Any
 from app.core.config import settings
 from app.models.payment import SplitConfig
+
+logger = logging.getLogger(__name__)
 
 
 class PaystackService:
@@ -14,7 +17,13 @@ class PaystackService:
     
     def __init__(self):
         self.secret_key = settings.PAYSTACK_SECRET_KEY
-        self.base_url = "https://api.paystack.co"
+        # Use test or live base URL based on environment
+        if settings.is_development:
+            self.base_url = "https://api.paystack.co"
+            # In dev, we expect test keys (sk_test_...)
+        else:
+            self.base_url = "https://api.paystack.co"
+            # In prod, we expect live keys (sk_live_...)
         
     async def initialize_transaction(
         self,
@@ -28,6 +37,9 @@ class PaystackService:
         
         # Amount in kobo (Paystack uses kobo for NGN)
         amount_kobo = int(amount * 100)
+        
+        if settings.is_development:
+            logger.info(f"[DEV] Initializing payment: {reference} for {email} - Amount: NGN {amount}")
         
         payload = {
             "email": email,
@@ -64,6 +76,8 @@ class PaystackService:
                 
                 if response.status_code == 200:
                     data = response.json()
+                    if settings.is_development:
+                        logger.info(f"[DEV] Payment initialized successfully: {reference}")
                     return {
                         "status": "success",
                         "authorization_url": data["data"]["authorization_url"],
@@ -71,19 +85,29 @@ class PaystackService:
                         "reference": data["data"]["reference"],
                     }
                 else:
+                    error_msg = response.json().get("message", "Payment initialization failed")
+                    if settings.is_development:
+                        logger.error(f"[DEV] Payment initialization failed: {error_msg}")
                     return {
                         "status": "error",
-                        "message": response.json().get("message", "Payment initialization failed"),
+                        "message": error_msg,
                     }
             except Exception as e:
-                print(f"Error initializing payment: {e}")
+                error_msg = str(e)
+                if settings.is_development:
+                    logger.error(f"[DEV] Error initializing payment: {error_msg}")
+                else:
+                    logger.error(f"Error initializing payment for reference {reference}")
                 return {
                     "status": "error",
-                    "message": str(e),
+                    "message": error_msg if settings.is_development else "Payment initialization failed",
                 }
     
     async def verify_transaction(self, reference: str) -> Dict[str, Any]:
         """Verify a payment transaction"""
+        
+        if settings.is_development:
+            logger.info(f"[DEV] Verifying transaction: {reference}")
         
         async with httpx.AsyncClient() as client:
             try:
@@ -97,24 +121,35 @@ class PaystackService:
                 
                 if response.status_code == 200:
                     data = response.json()
+                    if settings.is_development:
+                        logger.info(f"[DEV] Transaction verified successfully: {reference}")
                     return {
                         "status": "success",
                         "data": data["data"],
                     }
                 else:
+                    if settings.is_development:
+                        logger.error(f"[DEV] Transaction verification failed: {reference}")
                     return {
                         "status": "error",
                         "message": "Verification failed",
                     }
             except Exception as e:
-                print(f"Error verifying payment: {e}")
+                error_msg = str(e)
+                if settings.is_development:
+                    logger.error(f"[DEV] Error verifying payment: {error_msg}")
+                else:
+                    logger.error(f"Error verifying payment for reference {reference}")
                 return {
                     "status": "error",
-                    "message": str(e),
+                    "message": error_msg if settings.is_development else "Verification failed",
                 }
     
     async def create_subaccount(self, operator_data: dict) -> Dict[str, Any]:
         """Create a subaccount for an operator"""
+        
+        if settings.is_development:
+            logger.info(f"[DEV] Creating subaccount for: {operator_data.get('business_name')}")
         
         payload = {
             "business_name": operator_data["business_name"],
@@ -137,24 +172,36 @@ class PaystackService:
                 
                 if response.status_code == 200 or response.status_code == 201:
                     data = response.json()
+                    if settings.is_development:
+                        logger.info(f"[DEV] Subaccount created: {data['data']['subaccount_code']}")
                     return {
                         "status": "success",
                         "subaccount_code": data["data"]["subaccount_code"],
                     }
                 else:
+                    error_msg = response.json().get("message", "Subaccount creation failed")
+                    if settings.is_development:
+                        logger.error(f"[DEV] Subaccount creation failed: {error_msg}")
                     return {
                         "status": "error",
-                        "message": response.json().get("message", "Subaccount creation failed"),
+                        "message": error_msg,
                     }
             except Exception as e:
-                print(f"Error creating subaccount: {e}")
+                error_msg = str(e)
+                if settings.is_development:
+                    logger.error(f"[DEV] Error creating subaccount: {error_msg}")
+                else:
+                    logger.error(f"Error creating subaccount")
                 return {
                     "status": "error",
-                    "message": str(e),
+                    "message": error_msg if settings.is_development else "Subaccount creation failed",
                 }
     
     async def initiate_refund(self, reference: str, amount: Optional[float] = None) -> Dict[str, Any]:
         """Initiate a refund"""
+        
+        if settings.is_development:
+            logger.info(f"[DEV] Initiating refund for: {reference}")
         
         payload = {
             "transaction": reference,
@@ -177,20 +224,29 @@ class PaystackService:
                 
                 if response.status_code == 200:
                     data = response.json()
+                    if settings.is_development:
+                        logger.info(f"[DEV] Refund initiated successfully: {reference}")
                     return {
                         "status": "success",
                         "data": data["data"],
                     }
                 else:
+                    error_msg = response.json().get("message", "Refund failed")
+                    if settings.is_development:
+                        logger.error(f"[DEV] Refund failed: {error_msg}")
                     return {
                         "status": "error",
-                        "message": response.json().get("message", "Refund failed"),
+                        "message": error_msg,
                     }
             except Exception as e:
-                print(f"Error initiating refund: {e}")
+                error_msg = str(e)
+                if settings.is_development:
+                    logger.error(f"[DEV] Error initiating refund: {error_msg}")
+                else:
+                    logger.error(f"Error initiating refund for reference {reference}")
                 return {
                     "status": "error",
-                    "message": str(e),
+                    "message": error_msg if settings.is_development else "Refund failed",
                 }
     
     def verify_webhook_signature(self, payload: bytes, signature: str) -> bool:
