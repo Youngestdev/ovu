@@ -86,7 +86,7 @@ class EmailService:
         self,
         to_email: str,
         first_name: str,
-        dashboard_url: str = "https://ovutransport.com/dashboard",
+        dashboard_url: str = "https://ovu.ng/dashboard",
     ) -> bool:
         """Send welcome email to new user"""
         context = {
@@ -113,7 +113,7 @@ class EmailService:
         departure_date: str,
         total_passengers: int,
         total_price: float,
-        booking_url: str = "https://ovutransport.com/bookings",
+        booking_url: str = "https://ovu.ng/bookings",
     ) -> bool:
         """Send booking confirmation email"""
         context = {
@@ -175,7 +175,7 @@ class EmailService:
         amount: float,
         payment_date: str,
         payment_method: str = "Card",
-        booking_url: str = "https://ovutransport.com/bookings",
+        booking_url: str = "https://ovu.ng/bookings",
     ) -> bool:
         """Send payment success notification"""
         context = {
@@ -204,7 +204,7 @@ class EmailService:
         booking_reference: str,
         amount: float,
         reason: Optional[str] = None,
-        retry_payment_url: str = "https://ovutransport.com/payments/retry",
+        retry_payment_url: str = "https://ovu.ng/payments/retry",
     ) -> bool:
         """Send payment failed notification"""
         context = {
@@ -234,7 +234,7 @@ class EmailService:
         departure_date: str,
         cancellation_date: str,
         refund_amount: Optional[float] = None,
-        search_url: str = "https://ovutransport.com/search",
+        search_url: str = "https://ovu.ng/search",
     ) -> bool:
         """Send booking cancellation notification"""
         context = {

@@ -57,7 +57,7 @@ class Settings(BaseSettings):
     
     # Resend
     RESEND_API_KEY: str
-    RESEND_FROM_EMAIL: str = "Ovu Transport <noreply@ovutransport.com>"
+    RESEND_FROM_EMAIL: str = "Ovu Transport <noreply@ovu.ng>"
     
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"

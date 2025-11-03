@@ -18,7 +18,7 @@ Add your Resend API key to the `.env` file:
 
 ```env
 RESEND_API_KEY=re_your_api_key_here
-RESEND_FROM_EMAIL=Ovu Transport <noreply@ovutransport.com>
+RESEND_FROM_EMAIL=Ovu Transport <noreply@ovu.ng>
 ```
 
 ### 3. Verify Domain
@@ -26,7 +26,7 @@ RESEND_FROM_EMAIL=Ovu Transport <noreply@ovutransport.com>
 Before sending emails, you need to verify your domain in Resend:
 
 1. Log in to [Resend Dashboard](https://resend.com/domains)
-2. Add your domain (e.g., `ovutransport.com`)
+2. Add your domain (e.g., `ovu.ng`)
 3. Add the DNS records provided by Resend to your domain
 4. Wait for verification (usually takes a few minutes)
 
@@ -102,7 +102,7 @@ await notification_service.send_ticket(
     email="user@example.com",
     phone="+2348012345678",
     ticket_number="TKT123456",
-    ticket_url="https://ovutransport.com/tickets/123",
+    ticket_url="https://ovu.ng/tickets/123",
     booking_details={
         "customer_name": "John Doe",
         "booking_reference": "BKG123456",
