@@ -17,13 +17,9 @@ class PaystackService:
     
     def __init__(self):
         self.secret_key = settings.PAYSTACK_SECRET_KEY
-        # Use test or live base URL based on environment
-        if settings.is_development:
-            self.base_url = "https://api.paystack.co"
-            # In dev, we expect test keys (sk_test_...)
-        else:
-            self.base_url = "https://api.paystack.co"
-            # In prod, we expect live keys (sk_live_...)
+        self.base_url = "https://api.paystack.co"
+        # Paystack uses the same API endpoint for both test and live keys
+        # The environment is determined by the secret key prefix (sk_test_ or sk_live_)
         
     async def initialize_transaction(
         self,
