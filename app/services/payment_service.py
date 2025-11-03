@@ -187,7 +187,7 @@ class PaystackService:
                 if settings.is_development:
                     logger.error(f"[DEV] Error creating subaccount: {error_msg}")
                 else:
-                    logger.error(f"Error creating subaccount")
+                    logger.error(f"Error creating subaccount for business: {operator_data.get('business_name', 'unknown')}")
                 return {
                     "status": "error",
                     "message": error_msg if settings.is_development else "Subaccount creation failed",
