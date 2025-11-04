@@ -9,6 +9,7 @@ import logging
 from app.core.config import settings
 from app.core.database import connect_to_mongo, close_mongo_connection
 from app.routes import auth, bookings, payments, operators, partners
+from app.routes import waitlist
 
 
 # Configure logging
@@ -99,6 +100,7 @@ app.include_router(bookings.router, prefix="/api/v1")
 app.include_router(payments.router, prefix="/api/v1")
 app.include_router(operators.router, prefix="/api/v1")
 app.include_router(partners.router)
+app.include_router(waitlist.router, prefix="/api/v1")
 
 
 if __name__ == "__main__":

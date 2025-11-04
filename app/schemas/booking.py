@@ -4,7 +4,24 @@ Booking schemas
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
-from app.models.booking import TransportType, SeatType
+
+from enum import Enum
+
+
+class SeatType(str, Enum):
+    """Seat types"""
+    ECONOMY = "economy"
+    BUSINESS = "business"
+    FIRST_CLASS = "first_class"
+    SLEEPER = "sleeper"
+    STANDARD = "standard"
+
+
+class TransportType(str, Enum):
+    """Transport types"""
+    FLIGHT = "flight"
+    BUS = "bus"
+    TRAIN = "train"
 
 
 class PassengerCreate(BaseModel):
@@ -47,7 +64,7 @@ class SearchResult(BaseModel):
     duration_minutes: Optional[int] = None
     operator_id: Optional[str] = None
     provider_reference: str
-    
+
     # Type-specific details
     flight_number: Optional[str] = None
     airline: Optional[str] = None
@@ -62,7 +79,7 @@ class BookingCreate(BaseModel):
     provider_reference: str
     transport_type: TransportType
     passengers: List[PassengerCreate]
-    
+
     # Optional fields
     metadata: Optional[dict] = {}
 
@@ -81,6 +98,6 @@ class BookingResponse(BaseModel):
     total_price: float
     currency: str
     created_at: datetime
-    
+
     class Config:
         from_attributes = True

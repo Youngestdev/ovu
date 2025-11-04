@@ -10,10 +10,11 @@ from app.models.payment import Payment, Transaction
 from app.models.ticket import Ticket
 from app.models.operator import Operator
 from app.models.partner import Partner
+from app.models.waitlist import WaitlistSubscription
 
 
 class Database:
-    client: AsyncIOMotorClient = None
+    client: AsyncIOMotorClient = None  # type: ignore
     
     
 db = Database()
@@ -21,10 +22,11 @@ db = Database()
 
 async def connect_to_mongo():
     """Connect to MongoDB"""
-    db.client = AsyncIOMotorClient(settings.MONGODB_URL)
-    
+    client = AsyncIOMotorClient(settings.MONGODB_URL)
+    db.client = client  # type: ignore
+
     await init_beanie(
-        database=db.client[settings.MONGODB_DB_NAME],
+        database=client[settings.MONGODB_DB_NAME],
         document_models=[
             User,
             Booking,
@@ -36,6 +38,7 @@ async def connect_to_mongo():
             Ticket,
             Operator,
             Partner,
+            WaitlistSubscription,
         ]
     )
 

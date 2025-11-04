@@ -7,6 +7,8 @@ from beanie import Document
 from pydantic import Field
 from enum import Enum
 
+from app.schemas.booking import PassengerCreate
+
 
 class TransportType(str, Enum):
     """Transport types"""
@@ -54,37 +56,37 @@ class Booking(Document):
     user_id: str = Field(index=True)
     transport_type: TransportType
     status: BookingStatus = BookingStatus.PENDING
-    
+
     # Route information
     origin: str
     destination: str
     departure_date: datetime
     arrival_date: Optional[datetime] = None
-    
+
     # Passengers
-    passengers: List[Passenger] = []
+    passengers: List[PassengerCreate] = []
     total_passengers: int
-    
+
     # Pricing
     base_price: float
     tax: float
     service_fee: float
     total_price: float
     currency: str = "NGN"
-    
+
     # External references
     provider_booking_id: Optional[str] = None
     operator_id: Optional[str] = None
-    
+
     # Metadata
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     cancelled_at: Optional[datetime] = None
     cancellation_reason: Optional[str] = None
-    
+
     # Additional data
     metadata: Dict[str, Any] = {}
-    
+
     class Settings:
         name = "bookings"
         indexes = [
@@ -104,7 +106,7 @@ class FlightBooking(Booking):
     departure_terminal: Optional[str] = None
     arrival_terminal: Optional[str] = None
     baggage_allowance: Optional[str] = None
-    
+
     class Settings:
         name = "flight_bookings"
 
@@ -117,7 +119,7 @@ class BusBooking(Booking):
     arrival_terminal: str
     bus_number: Optional[str] = None
     amenities: List[str] = []
-    
+
     class Settings:
         name = "bus_bookings"
 
@@ -130,6 +132,6 @@ class TrainBooking(Booking):
     departure_station: str
     arrival_station: str
     train_class: str
-    
+
     class Settings:
         name = "train_bookings"

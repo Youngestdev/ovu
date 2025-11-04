@@ -4,8 +4,21 @@ Booking routes for unified search and booking management
 from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List
 from datetime import datetime
-from app.schemas.booking import SearchRequest, SearchResult, BookingCreate, BookingResponse
-from app.models.booking import Booking, FlightBooking, BusBooking, TrainBooking, BookingStatus, TransportType
+from app.schemas.booking import (
+    SearchRequest,
+    SearchResult,
+    BookingCreate,
+    BookingResponse,
+    TransportType as SchemaTransportType,
+)
+from app.models.booking import (
+    Booking,
+    FlightBooking,
+    BusBooking,
+    TrainBooking,
+    BookingStatus,
+    TransportType,
+)
 from app.models.user import User
 from app.middleware.auth import get_current_user
 from app.services.travu_client import TravuAPIClient
@@ -16,6 +29,24 @@ from app.utils.helpers import generate_reference
 
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
+
+
+def _to_booking_response(booking: Booking) -> BookingResponse:
+    """Map any booking document to BookingResponse"""
+    return BookingResponse(
+        id=str(booking.id),
+        booking_reference=booking.booking_reference,
+        user_id=booking.user_id,
+        transport_type=SchemaTransportType(booking.transport_type.value),
+        status=booking.status,
+        origin=booking.origin,
+        destination=booking.destination,
+        departure_date=booking.departure_date,
+        total_passengers=booking.total_passengers,
+        total_price=booking.total_price,
+        currency=booking.currency,
+        created_at=booking.created_at,
+    )
 
 
 @router.post("/search", response_model=List[SearchResult])
@@ -124,7 +155,8 @@ async def create_booking(
             detail="Invalid transport type"
         )
     
-    await booking.save()
+    # Persist booking
+    await booking.save()  # type: ignore
     
     # Send booking confirmation
     notification_service = NotificationService()
@@ -147,7 +179,7 @@ async def create_booking(
         id=str(booking.id),
         booking_reference=booking.booking_reference,
         user_id=booking.user_id,
-        transport_type=booking.transport_type,
+        transport_type=SchemaTransportType(booking.transport_type.value),
         status=booking.status,
         origin=booking.origin,
         destination=booking.destination,
@@ -166,28 +198,22 @@ async def get_user_bookings(
     limit: int = 10,
 ):
     """Get user's bookings"""
-    
-    bookings = await Booking.find(
-        Booking.user_id == str(current_user.id)
-    ).skip(skip).limit(limit).to_list()
-    
-    return [
-        BookingResponse(
-            id=str(booking.id),
-            booking_reference=booking.booking_reference,
-            user_id=booking.user_id,
-            transport_type=booking.transport_type,
-            status=booking.status,
-            origin=booking.origin,
-            destination=booking.destination,
-            departure_date=booking.departure_date,
-            total_passengers=booking.total_passengers,
-            total_price=booking.total_price,
-            currency=booking.currency,
-            created_at=booking.created_at,
-        )
-        for booking in bookings
-    ]
+    # Collect from all specific booking collections to ensure unified results
+    user_filter = Booking.user_id == str(current_user.id)
+
+    flight_bookings = await FlightBooking.find(user_filter).to_list()
+    bus_bookings = await BusBooking.find(user_filter).to_list()
+    train_bookings = await TrainBooking.find(user_filter).to_list()
+
+    combined = flight_bookings + bus_bookings + train_bookings
+
+    # Sort newest first by created_at for consistency
+    combined.sort(key=lambda b: b.created_at, reverse=True)
+
+    # Paginate after merge
+    paged = combined[skip : skip + limit]
+
+    return [_to_booking_response(b) for b in paged]
 
 
 @router.get("/{booking_id}", response_model=BookingResponse)
@@ -196,12 +222,19 @@ async def get_booking(
     current_user: User = Depends(get_current_user)
 ):
     """Get a specific booking"""
-    
+    # Attempt to locate the booking across all collections
     booking = await Booking.get(booking_id)
+    if not booking:
+        # Try specific collections
+        booking = await FlightBooking.get(booking_id)
+    if not booking:
+        booking = await BusBooking.get(booking_id)
+    if not booking:
+        booking = await TrainBooking.get(booking_id)
     if not booking:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Booking not found"
+            detail="Booking not found",
         )
     
     # Check if user owns the booking
@@ -211,20 +244,7 @@ async def get_booking(
             detail="Not authorized to view this booking"
         )
     
-    return BookingResponse(
-        id=str(booking.id),
-        booking_reference=booking.booking_reference,
-        user_id=booking.user_id,
-        transport_type=booking.transport_type,
-        status=booking.status,
-        origin=booking.origin,
-        destination=booking.destination,
-        departure_date=booking.departure_date,
-        total_passengers=booking.total_passengers,
-        total_price=booking.total_price,
-        currency=booking.currency,
-        created_at=booking.created_at,
-    )
+    return _to_booking_response(booking)
 
 
 @router.post("/{booking_id}/cancel")
@@ -233,12 +253,18 @@ async def cancel_booking(
     current_user: User = Depends(get_current_user)
 ):
     """Cancel a booking"""
-    
+    # Locate the booking across all collections
     booking = await Booking.get(booking_id)
+    if not booking:
+        booking = await FlightBooking.get(booking_id)
+    if not booking:
+        booking = await BusBooking.get(booking_id)
+    if not booking:
+        booking = await TrainBooking.get(booking_id)
     if not booking:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Booking not found"
+            detail="Booking not found",
         )
     
     # Check if user owns the booking
@@ -258,6 +284,6 @@ async def cancel_booking(
     # Update booking status
     booking.status = BookingStatus.CANCELLED
     booking.cancelled_at = datetime.utcnow()
-    await booking.save()
+    await booking.save()  # type: ignore
     
     return {"message": "Booking cancelled successfully"}
