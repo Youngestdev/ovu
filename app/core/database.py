@@ -11,6 +11,7 @@ from app.models.ticket import Ticket
 from app.models.operator import Operator
 from app.models.partner import Partner
 from app.models.waitlist import WaitlistSubscription
+from app.models.partners import PartnershipInterest
 
 
 class Database:
@@ -39,6 +40,7 @@ async def connect_to_mongo():
             Operator,
             Partner,
             WaitlistSubscription,
+            PartnershipInterest
         ]
     )
 
