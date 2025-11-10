@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr
+from pydantic_mongo import PydanticObjectId
 from typing import Optional
 from datetime import datetime
 
@@ -11,7 +12,7 @@ class PartnershipRequest(BaseModel):
 
 
 class PartnershipResponses(BaseModel):
-    id: str
+    id: PydanticObjectId
     name: Optional[str] = None
     email: EmailStr
     created_at: datetime
