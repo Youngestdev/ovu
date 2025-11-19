@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 import logging
 from app.core.config import settings
 from app.core.database import connect_to_mongo, close_mongo_connection
-from app.routes import auth, bookings, payments, operators, partners, waitlist, partnerships
+from app.routes import auth, bookings, payments, operators, partners, waitlist, partnerships, questions
 
 # Configure logging
 logging.basicConfig(
@@ -54,6 +54,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Rate limiting middleware
+from app.middleware.rate_limit import add_rate_limit_headers
+app.middleware("http")(add_rate_limit_headers)
+
 
 # Exception handlers
 @app.exception_handler(Exception)
@@ -98,8 +102,15 @@ app.include_router(bookings.router, prefix="/api/v1")
 app.include_router(payments.router, prefix="/api/v1")
 app.include_router(operators.router, prefix="/api/v1")
 app.include_router(partners.router)
+
+# Partner authentication routes
+from app.routes import partner_auth
+app.include_router(partner_auth.router)
+app.include_router(partner_auth.admin_router)
+
 app.include_router(waitlist.router, prefix="/api/v1")
 app.include_router(partnerships.router)
+app.include_router(questions.router, prefix="/api/v1")
 
 
 if __name__ == "__main__":

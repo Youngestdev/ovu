@@ -114,6 +114,22 @@ class NotificationService:
         if phone:
             sms_message = f"Booking confirmed! Ref: {booking_reference}. Check your email for details."
             await self.send_sms(phone, sms_message)
+
+    async def send_waitlist_acknowledgement(self, email: str, name: Optional[str] = None) -> None:
+        """Notify a user who subscribed to the waitlist"""
+        await self.email_service.send_waitlist_subscription(
+            to_email=email,
+            name=name,
+        )
+
+    async def send_partnership_acknowledgement(self, email: str, company_name: str, category: str, phone: Optional[str] = None) -> None:
+        """Notify a user/company who submitted partnership interest"""
+        await self.email_service.send_partnership_acknowledgement(
+            to_email=email,
+            company_name=company_name,
+            category=category,
+            phone=phone,
+        )
     
     async def send_ticket(
         self,

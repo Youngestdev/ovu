@@ -255,3 +255,47 @@ class EmailService:
             subject=f"Booking Cancelled - {booking_reference}",
             html_content=html_content,
         )
+
+    async def send_waitlist_subscription(
+        self,
+        to_email: str,
+        name: Optional[str] = None,
+    ) -> bool:
+        """Send acknowledgement email for waitlist subscription"""
+        context = {
+            'name': name,
+            'email': to_email,
+            'subject': "You're on the Ovu waitlist",
+        }
+
+        html_content = self._render_template('waitlist_signup', context)
+
+        return await self.send_email(
+            to_email=to_email,
+            subject=context['subject'],
+            html_content=html_content,
+        )
+
+    async def send_partnership_acknowledgement(
+        self,
+        to_email: str,
+        company_name: str,
+        category: str,
+        phone: Optional[str] = None,
+    ) -> bool:
+        """Send acknowledgement email for partnership interest"""
+        context = {
+            'company_name_input': company_name,
+            'category': category,
+            'email': to_email,
+            'phone': phone,
+            'subject': "Thanks for your partnership interest",
+        }
+
+        html_content = self._render_template('partnership_signup', context)
+
+        return await self.send_email(
+            to_email=to_email,
+            subject=context['subject'],
+            html_content=html_content,
+        )

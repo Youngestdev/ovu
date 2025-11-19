@@ -10,8 +10,10 @@ from app.models.payment import Payment, Transaction
 from app.models.ticket import Ticket
 from app.models.operator import Operator
 from app.models.partner import Partner
+from app.models.api_key import APIKey
 from app.models.waitlist import WaitlistSubscription
 from app.models.partners import PartnershipInterest
+from app.models.questions import Question
 
 
 class Database:
@@ -39,8 +41,10 @@ async def connect_to_mongo():
             Ticket,
             Operator,
             Partner,
+            APIKey,
             WaitlistSubscription,
-            PartnershipInterest
+            PartnershipInterest,
+            Question
         ]
     )
 

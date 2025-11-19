@@ -201,17 +201,43 @@ Response:
 }
 ```
 
+## B2B Integration
+
+Ovu provides a comprehensive B2B API for businesses to integrate transport booking into their platforms.
+
+### Getting Started as a Business Partner
+
+1. Contact us to register as a business partner
+2. Receive your API credentials
+3. Integrate using our RESTful API
+4. Configure webhooks for real-time updates
+
+See [B2B Documentation](docs/b2b/getting-started.md) for detailed integration guides.
+
+### B2B Features
+
+- **Multi-API Key Management**: Generate and manage multiple API keys
+- **Usage Analytics**: Track API usage and performance metrics
+- **Webhook Integration**: Receive real-time booking and payment notifications
+- **Flexible Rate Limits**: Configurable limits based on your business tier
+- **Dedicated Support**: Priority support for business partners
+
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+See [Contributing Guidelines](docs/contributing/guidelines.md) for information on how to contribute to this project.
 
 ## License
 
 MIT License
+
+## Documentation
+
+- **[Quick Start Guide](docs/guides/quickstart.md)** - Get started in 5 minutes
+- **[API Documentation](API_DOCUMENTATION.md)** - Complete API reference
+- **[Architecture](ARCHITECTURE.md)** - System architecture and design
+- **[Deployment Guide](docs/deployment/general.md)** - Production deployment
+- **[Security Policy](docs/contributing/security.md)** - Security guidelines
+- **[B2B Integration](docs/b2b/getting-started.md)** - Business partner guide
 
 ## Support
 
