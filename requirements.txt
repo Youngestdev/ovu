@@ -39,8 +39,8 @@ resend==2.0.0
 jinja2==3.1.2
 
 # Task Queue for async operations
-celery==5.3.4
-redis==5.0.1  # For Celery and rate limiting async operations
+celery
+redis  # For Celery and rate limiting async operations
 celery[redis]
 redis
 
